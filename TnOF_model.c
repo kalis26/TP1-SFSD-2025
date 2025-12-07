@@ -9,10 +9,10 @@
 #include <string.h>
 
 // open a TnOF file / mode ='N' for a New file and mode ='E' for an Existing file
-// returns a pointer to a newly allocated variable of type 't_TnOF'
-void TnOF_open(t_TnOF **F, char *fname, char mode)
+// returns a pointer to a newly allocated variable of type 'TnOFData'
+void TnOF_open(TnOFData **F, char *fname, char mode)
 {
-    *F = malloc(sizeof(t_TnOF));
+    *F = malloc(sizeof(TnOFData));
     if (mode == 'E' || mode == 'e')
     {
         // openning an existing TnOF file ...
@@ -23,7 +23,7 @@ void TnOF_open(t_TnOF **F, char *fname, char mode)
             exit(EXIT_FAILURE);
         }
         // loading header part in main memory (in (*F)->h)
-        fread(&((*F)->h), sizeof(t_header), 1, (*F)->f);
+        fread(&((*F)->h), sizeof(THeaderData), 1, (*F)->f);
     }
     else
     { // mode == 'N' || mode == 'n'
@@ -37,37 +37,37 @@ void TnOF_open(t_TnOF **F, char *fname, char mode)
         // initializing the header part in main memory (in (*)->h)
         (*F)->h.nBlock = 0;
         (*F)->h.nIns = 0;
-        fwrite(&((*F)->h), sizeof(t_header), 1, (*F)->f);
+        fwrite(&((*F)->h), sizeof(THeaderData), 1, (*F)->f);
     }
 }
 
 // close a TnOF file :
 // the header is first saved at the beginning of the file and the t_TnOF variable is freed
-void TnOF_close(t_TnOF *F)
+void TnOF_close(TnOFData *F)
 {
     // saving header part in secondary memory (at the begining of the stream F->f)
     fseek(F->f, 0L, SEEK_SET);
-    fwrite(&F->h, sizeof(t_header), 1, F->f);
+    fwrite(&F->h, sizeof(THeaderData), 1, F->f);
     fclose(F->f);
     free(F);
 }
 
 // reading data block number i into variable buf
-void TnOF_readBlock(t_TnOF *F, long i, t_block *buf)
+void TnOF_readBlock(TnOFData *F, long i, TblocData *buf)
 {
-    fseek(F->f, sizeof(t_header) + (i - 1) * sizeof(t_block), SEEK_SET);
-    fread(buf, sizeof(t_block), 1, F->f);
+    fseek(F->f, sizeof(THeaderData) + (i - 1) * sizeof(TblocData), SEEK_SET);
+    fread(buf, sizeof(TblocData), 1, F->f);
 }
 
 // writing the contents of the variable buf in data block number i
-void TnOF_writeBlock(t_TnOF *F, long i, t_block *buf)
+void TnOF_writeBlock(TnOFData *F, long i, TblocData *buf)
 {
-    fseek(F->f, sizeof(t_header) + (i - 1) * sizeof(t_block), SEEK_SET);
-    fwrite(buf, sizeof(t_block), 1, F->f);
+    fseek(F->f, sizeof(THeaderData) + (i - 1) * sizeof(TblocData), SEEK_SET);
+    fwrite(buf, sizeof(TblocData), 1, F->f);
 }
 
 // header modification
-void TnOF_setHeader(t_TnOF *F, char *hname, long val)
+void TnOF_setHeader(TnOFData *F, char *hname, long val)
 {
     if (strcmp(hname, "nBlock") == 0)
     {
@@ -83,7 +83,7 @@ void TnOF_setHeader(t_TnOF *F, char *hname, long val)
 }
 
 // header value
-long TnOF_getHeader(t_TnOF *F, char *hname)
+long TnOF_getHeader(TnOFData *F, char *hname)
 {
     if (strcmp(hname, "nBlock") == 0)
         return F->h.nBlock;

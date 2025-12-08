@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAXTAB 10
+
 // open a TOF file / mode ='N' for a New file and mode ='E' for an Existing file
 // returns a pointer to a newly allocated variable of type 'TOFIndex'
 void TI_open(TOFIndex **F, char *fname, char mode)

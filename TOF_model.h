@@ -16,7 +16,7 @@
 
 typedef struct t_TblocIndex
 {
-	ValT2 tab[MAXTAB];
+	ValT2 tab[MAXTAB+1];
 	int NB;
 } TblocIndex;
 
@@ -46,6 +46,7 @@ void TI_open(TOFIndex **F, char *fname, char mode);
 // close a TOF file :
 // the header is first saved at the beginning of the file and the t_TOF variable is freed
 void TI_close(TOFIndex *F);
+
 // reading data block number i into variable buf
 void TI_readBlock(TOFIndex *F, long i, TblocIndex *buf);
 

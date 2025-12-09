@@ -1,4 +1,5 @@
 #include "index_gen.h"
+#include <stdbool.h>
 
 
 /* comparator for ValT2 by key */
@@ -55,24 +56,32 @@ void generate_random_TOF_index(const char *fname, int nBlocks, int maxPerBlk, in
     TI_close(F);
 }
 
-static void print_t2(T2 *r)
+static void print_t2(T2 *r, bool *first_element)
 {
     if (!r)
         return;
-    print_t2(r->fg);
-    printf("(key: %ld, bloc=%ld, depl=%d)\n", (long)r->val.cle, (long)r->val.nbloc, r->val.depl);
-    print_t2(r->fd);
+    print_t2(r->fg, first_element);
+    if (*first_element) {
+        printf("   %08ld   | (%04ld, %04d) |\n", (long)r->val.cle, (long)r->val.nbloc, r->val.depl);
+        *first_element = false;
+    } else {
+        printf("|            |            |   %08ld   | (%04ld, %04d) |\n", (long)r->val.cle, (long)r->val.nbloc, r->val.depl);
+    }
+    print_t2(r->fd, first_element);
 }
 
 static void print_t1(T1 *r)
 {
     if (!r)
         return;
+    bool *first_element = malloc(sizeof(bool));
+    *first_element = true;
     print_t1(r->fg);
-    printf("Val1=%d\n", r->val.v1);
-    printf("Val2=%d\n", r->val.v2);
-    print_t2(r->val.R);
+    printf("|  %08d  |  %08d  |", r->val.v1, r->val.v2);
+    print_t2(r->val.R, first_element);
+    printf("|____________|____________|______________|______________|\n");
     print_t1(r->fd);
+    free(first_element);
 }
 
 /* Free helpers */
@@ -95,5 +104,17 @@ static void free_t1(T1 *r)
     free(r);
 }
 
-void print_index(T1 *root) { print_t1(root); }
+void print_index(T1 *root) { 
+    if (!root) {
+        printf("<empty index>\n");
+        return;
+    }
+    printf("Index content:\n");
+    printf(" _______________________________________________________\n");
+    printf("|            |            |              R              |\n");
+    printf("|    Val1    |    Val2    |---------------------------- |\n");
+    printf("|            |            |     Cles     |  Depl (i,j)  |\n");
+    printf("|____________|____________|______________|______________|\n");
+    print_t1(root);
+}
 void free_index(T1 *root) { free_t1(root); }

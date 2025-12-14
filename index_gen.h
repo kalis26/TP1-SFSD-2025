@@ -7,8 +7,9 @@
 #include <time.h>
 #include "TOF_model.h"
 
+void setColor(int ForgeC);
+void clearScreen();
 void generate_random_TOF_index(const char *fname, int nBlocks, int maxPerBlk, int maxDataBlk);
-
 void print_index(T1 *root);
 void free_index(T1 *root);
 

@@ -1,6 +1,33 @@
 #include "index_gen.h"
 #include <stdbool.h>
 
+#include <windows.h>
+
+/********* Constantes et variables *********/
+
+#define RED 12   // Code pour la couleur rouge (Terminal)
+#define GRAY 8   // Code pour la couleur grise
+#define BLUE 9   // Code pour la couleur bleue
+#define GREEN 10 // Code pour la couleur verte
+#define WHITE 15 // Code pour la couleur blanche
+#define CYAN 11  // Code pour la couleur cyan
+
+/*******************************************/
+
+/************************* Terminal ***************************/
+
+void setColor(int ForgeC)
+{ // Choisir la couleur du texte affiché
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hStdOut, ForgeC);
+}
+
+void clearScreen()
+{ // Rénitialiser l'écran
+    system("cls");
+}
+
+/**************************************************************/
 
 /* comparator for ValT2 by key */
 static int valt2_cmp(const void *a, const void *b)

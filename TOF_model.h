@@ -1,6 +1,9 @@
 /************************************************************************
  * Interface of the algorithmic model to manipulate a 'TOF' type file   *
- *        - SFSD (File & Data Structures) / 2CP / ESI / 2024 - 	        *
+ * SFSD (File & Data Structures) / 2CP / ESI / 2024 - 	                *
+ * TP - Index with binary search trees and B-trees                      *
+ * Members: Rachid Mustapha Amine, Boucif Soheib                        *
+ * Section: C, Group: 12                                                *
  ************************************************************************/
 
 #ifndef TOF_MODEL_H
@@ -39,12 +42,12 @@ typedef struct t_TOFIndex
 /**** The functions of the abstract machine      ****/
 /**** ****************************************** ****/
 
-// open a TOF file / mode ='N' for a New file and mode ='E' for an Existing file
-// returns a pointer to a newly allocated variable of type 't_TOF'
+// open a TOF file (In our case the Index) / mode ='N' for a New file and mode ='E' for an Existing file
+// returns a pointer to a newly allocated variable of type 'TOFIndex'
 void TI_open(TOFIndex **F, char *fname, char mode);
 
-// close a TOF file :
-// the header is first saved at the beginning of the file and the t_TOF variable is freed
+// close a TOF file (In our case the Index) :
+// the header is first saved at the beginning of the file and the TOFIndex variable is freed
 void TI_close(TOFIndex *F);
 
 // reading data block number i into variable buf

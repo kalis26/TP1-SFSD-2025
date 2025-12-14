@@ -1,6 +1,9 @@
 /**********************************************************
  * Implementation of TOF module functions (TOF_model.c)   *
  * SFSD (File & Data Structures) / 2CP / ESI / 2024       *
+ * TP - Index with binary search trees and B-trees        *
+ * Members: Rachid Mustapha Amine, Boucif Soheib          *
+ * Section: C, Group: 12                                  *
  **********************************************************/
 
 #include "TOF_model.h"
@@ -10,14 +13,14 @@
 
 #define MAXTAB 10
 
-// open a TOF file / mode ='N' for a New file and mode ='E' for an Existing file
+// open a TOF file (In our case the Index) / mode ='N' for a New file and mode ='E' for an Existing file
 // returns a pointer to a newly allocated variable of type 'TOFIndex'
 void TI_open(TOFIndex **F, char *fname, char mode)
 {
    *F = malloc(sizeof(TOFIndex));
    if (mode == 'E' || mode == 'e')
    {
-      // openning an existing TOF file ...
+      // opening an existing TOF file ...
       (*F)->f = fopen(fname, "rb+");
       if ((*F)->f == NULL)
       {
@@ -36,7 +39,7 @@ void TI_open(TOFIndex **F, char *fname, char mode)
          perror("TOF_open");
          exit(EXIT_FAILURE);
       }
-      // initializing the header part in main memory (in (*)->h)
+      // initializing the header part in main memory (in (*F)->h)
       (*F)->h.nBlock = 0;
       (*F)->h.nIns = 0;
       (*F)->h.nDel = 0;
@@ -44,7 +47,7 @@ void TI_open(TOFIndex **F, char *fname, char mode)
    }
 }
 
-// close a TOF file :
+// close a TOF file (In our case the Index) :
 // the header is first saved at the beginning of the file and the TOFIndex variable is freed
 void TI_close(TOFIndex *F)
 {

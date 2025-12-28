@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <conio.h>
 
 /********* Constantes et variables *********/
 
@@ -14,6 +15,7 @@
 #define WHITE 15 // Code for the white color (Terminal)
 #define CYAN 11  // Code for the cyan color (Terminal)
 #define MAXTAB 10 // maximum block capacity (in number of records)
+#define KEY_ENTER 13 // ASCII code for the Enter key
 
 /*******************************************/
 
@@ -520,7 +522,6 @@ void Inserer(Tenreg *e, int nBlocks) {
     Q = NULL;
     PS = NULL;
     QS = NULL;
-    e->cle = rand() % 10000 + 1;
     Recherche(e->cle, &trouve, &P, &Q, &PS, &QS);
     if (!trouve) {
         int i = rand() % (nBlocks + 1) + 1;
@@ -572,9 +573,10 @@ Node *createNode()
     return newNode;
 }
 
-// After filling the node with 4 value we need to sort them in assending way
+// function to sort the values of a node in ascending order
 void sortNodeValues(Node *n)
 {
+    // After filling the node with 4 value we need to sort them in assending way
     if (n == NULL)
         return;
 
@@ -602,7 +604,6 @@ void fillNodeValues(Node *n)
     {
         printf("Enter value %d for the node P : ", i + 1);
         scanf("%d", &n->val[i]);
-        printf("\n");
     }
     sortNodeValues(n); // after filling the node we sort its values
 }
@@ -639,11 +640,12 @@ void printNodeValues(Node *n, char p2)
     setColor(WHITE);
     printf("\n");
     printf("                           |______|______|______|______|\n"); // the box around the values is not colored
+    printf("\n");
 }
 
-
+// helper function to fill the temporary table and sort it
 void helper_table(int tab[4], Node *p, int value)
-{ // the role of this table he's like buffer or something temporary so we put all the values of our node inside it
+{ // the role of this table it's like a buffer or something temporary so we put all the values of our node inside it
     for (int i = 0; i < 5; i++)
     {
         tab[i] = p->val[i];
@@ -663,14 +665,15 @@ void helper_table(int tab[4], Node *p, int value)
     }
 }
 
+// function to split the node P into two nodes P and Q
 void split(Node *p, int mid)
-{                      // the main procedure
+{
     fillNodeValues(p); // we fill the node P with 4 values
-    printf("Node P values after key insertion and ordering:\n");
+    printf("\nNode P values after key insertion and ordering:\n");
     printNodeValues(p, 'P');
     int tab[5];
     int value_added;
-    printf("please enter the value to be added : ");
+    printf("\nPlease enter the value to be added : ");
     scanf("%d", &value_added);
     helper_table(tab, p, value_added); // we fill the helper table
     Node *Q = createNode();
@@ -685,8 +688,9 @@ void split(Node *p, int mid)
         p->val[i] = EMPTY;
         Q->val[i] = EMPTY;
     }
-    printf("\nMiddle value to be promoted: %d\n", mid);  // we print the midean value
-    printf("Values in original node p after split: \n"); // we print the values in both nodes after the split operation
+    printf("\nMiddle value to be promoted: ");
+    setColor(GREEN); printf("%d\n", mid); setColor(WHITE); // we print the midean value
+    printf("\nValues in original node P after split: \n"); // we print the values in both nodes after the split operation
     printNodeValues(p, 'P');
     printf("Values in new node Q after split: \n");
     printNodeValues(Q, 'Q');
@@ -697,38 +701,277 @@ void split(Node *p, int mid)
 int main(void)
 {
 
+    int choice;
+    int exit = 0;
+    const char *fname = "index.tof";
+    int nBlocks;
+    int maxPerBlk = MAXTAB;
+    int maxDataBlk;
+
     srand((unsigned)time(NULL));
 
-    const char *fname = "index.tof";
-    int nBlocks = 5;
-    int maxPerBlk = MAXTAB;
-    int maxDataBlk = 10;
-    generate_random_TOF_index(fname, nBlocks, maxPerBlk, maxDataBlk);
-    printf("Index file '%s' generated (%d blocks, up to %d entries/block)\n", fname, nBlocks, maxPerBlk);
-    LoadFromTOF();
-    print_index(Index);
-    SaveToTOF();
-    LoadFromTOF();
-    print_index(Index);
+    clearScreen();
 
-    Tenreg e;
-    Inserer(&e, nBlocks);
+    setColor(CYAN);
+    printf("\n\n\t\t\t\t ________________________________________________________________\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|");
+    setColor(WHITE);
+    printf("          Higher National School of Computer Science            ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                             - ESI -                            |\n");
+    Sleep(50);
+    printf("\t\t\t\t|________________________________________________________________|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|");
+    setColor(WHITE);
+    printf("          2nd Year Preparatory Class - University Year          ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                           2025 / 2026                          |\n");
+    Sleep(50);
+    printf("\t\t\t\t|________________________________________________________________|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|   Directed by :                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|       >>");
+    setColor(WHITE);
+    printf(" Rachid Mustapha Amine                                 ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|       >>");
+    setColor(WHITE);
+    printf(" Boucif Soheib                                         ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|   Section :");
+    setColor(WHITE);
+    printf(" C                                     ");
+    setColor(CYAN);
+    printf("Group :");
+    setColor(WHITE);
+    printf(" 12   ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|________________________________________________________________|\n");
+    Sleep(50);
+    printf("\t\t\t\t|                                                                |\n");
+    Sleep(50);
+    printf("\t\t\t\t|   TP1 :");
+    setColor(WHITE);
+    printf(" Indexation using binary search trees (BST) / B-trees   ");
+    setColor(CYAN);
+    printf("|\n");
+    Sleep(50);
+    printf("\t\t\t\t|________________________________________________________________|\n");
+    Sleep(50);
 
-    printf("After insertion of key %d, index content:\n", e.cle);
+    setColor(GRAY);
+    printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+    while (getch() != KEY_ENTER);
 
-    print_index(Index);
+    do
+    {
 
-    SaveToTOF();
-    LoadFromTOF();
+        clearScreen();
 
-    printf("Index content after reloading from TOF file:\n");
-    print_index(Index);
+        setColor(CYAN);
+        printf("    _ __ ___   ___ _ __  _   _  \n"); setColor(CYAN);
+        printf("   | '_ ` _ \\ / _ \\ '_ \\| | | | \n"); setColor(CYAN);
+        printf("   | | | | | |  __/ | | | |_| | \n"); setColor(CYAN);
+        printf("   |_| |_| |_|\\___|_| |_|\\__,_| \n");
 
-    free_index(Index);
+        setColor(WHITE);
 
-    Node *p = createNode();
-    int mid = 0;
-    split(p, mid);
+        printf("\n\n\t1. | Generate a random index file\n");
+        printf("\t2. | Load the index in RAM from the index file\n");
+        printf("\t3. | Save the index to a file (TOF)\n");
+        printf("\t4. | Print the index\n");
+        printf("\t5. | Search for a record by key K\n");
+        printf("\t6. | Insert a record\n");
+        printf("\t7. | Split a full leaf node in a B-tree of order 5\n");
+        printf("\t8. | Exit the program\n");
+        printf("\nChoose an option : ");
+
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice)
+        {
+
+        case 1:
+
+            clearScreen();
+            printf("\n\n- Generating a random TOF index file\n\n");
+            printf("Enter the number of index blocks to create : ");
+            scanf("%d", &nBlocks);
+            printf("Enter the maximum data block number to use for ValT2.nbloc (>=1) : ");
+            scanf("%d", &maxDataBlk);
+            printf("The maximum entries per block is set to %d.", MAXTAB);
+            printf("\nGenerating TOF index file \"%s\" ...\n", fname);
+            generate_random_TOF_index(fname, nBlocks, maxPerBlk, maxDataBlk);
+            setColor(GREEN);
+            printf("\nTOF index file \"%s\" generated successfully.\n", fname);
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 2:
+
+            LoadFromTOF();
+            setColor(GREEN);
+            printf("\nIndex loaded successfully from TOF file.\n");
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 3:
+
+            SaveToTOF();
+            setColor(GREEN);
+            printf("\nIndex saved successfully to TOF file.\n");
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 4:
+
+            print_index(Index);
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 5:
+
+            int key_to_search;
+            printf("\nEnter the key to search for: ");
+            scanf("%d", &key_to_search);
+            bool found;
+            T1 *P, *Q;
+            T2 *PS, *QS;
+            P = NULL;
+            Q = NULL;
+            PS = NULL;
+            QS = NULL;
+            Recherche(key_to_search, &found, &P, &Q, &PS, &QS);
+            if (found)
+            {
+                printf("\nKey %d found in index: Data Block = %ld, Offset = %d\n", key_to_search, (long)PS->val.nbloc, PS->val.depl);
+            }
+            else
+            {
+                setColor(RED);
+                printf("\nKey %d not found in index.\n", key_to_search);
+            }
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 6:
+
+            printf("\n\n- Let \'e\' be the record that was inserted in the TnOF data file.");
+            Tenreg e;
+            printf("\nEnter the key of the record: ");
+            scanf("%d", &e.cle);
+            Inserer(&e, nBlocks);
+            setColor(GREEN);
+            printf("\nKey %d inserted successfully into the index.\n", e.cle);
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 7:
+
+            clearScreen();
+            printf("\n\n- Splitting a full leaf node in a B-tree of order 5\n\n");
+            Node *N = createNode();
+            int mid;
+            split(N, mid);
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+
+        case 8:
+
+            char choice7;
+            setColor(RED);
+            printf("\nAre you sure you want to exit the program ? (y/n) : ");
+            setColor(WHITE);
+            scanf("%c", &choice7);
+            while (getchar() != '\n')
+                ;
+
+            if (choice7 == 'y' || choice7 == 'Y')
+            {
+
+                exit = 1;
+                free_index(Index);
+                printf("\nExiting...\n\n\n");
+                Sleep(1000);
+            }
+
+            break;
+
+        default:
+
+            setColor(RED);
+            printf("\nInvalid choice.");
+
+            setColor(GRAY);
+            printf("\n\n\nPRESS ENTER TO CONTINUE ...");
+            setColor(WHITE);
+            while (getch() != KEY_ENTER);
+
+            break;
+        }
+
+    } while (!exit);
 
     return 0;
 }

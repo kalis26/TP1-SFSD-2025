@@ -36,7 +36,7 @@ void clearScreen()
 
 /**************************************************************/
 
-
+// Declarations of the file structure of Part One (Questions 1)
 
 // type of values of T2
 typedef struct t_T2VAL
@@ -94,6 +94,8 @@ typedef struct t_TOFIndex
     FILE *f;        // C stream implementing the file
     THeaderIndex h; // the header in main memory
 } TOFIndex;
+
+// Declaration of the node structure for B-tree of order 5 of Part Two
 
 typedef struct node
 {

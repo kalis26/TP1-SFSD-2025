@@ -1,0 +1,418 @@
+//------------------------- PSEUDO-CODE OF PART 1 -------------------------\\
+
+
+ValT2 = struct 
+    cle : int
+    nbloc : int 
+    depl : int 
+End_struct
+
+T2 = struct 
+    val of ValT2
+    struct t_T2 *fg, *fd
+End_struct
+
+ValT1 = struct 
+    v1, v2 : int
+    struct T2 *R;
+End_struct
+
+T1 = struct 
+    val of ValT1
+    struct t_T1 *fg, *fd
+End_struct
+
+Tenreg = struct 
+    cle : int
+    field : int
+End_struct
+
+//##############################################################################################################//
+
+MAXTAB = 10
+
+TblocIndex = struct
+	tab : array[MAXTAB+1] of ValT2
+	NB : int
+End_struct
+
+// the file header (characteristics)
+THeaderIndex = struct
+	nbloc : int // number of blocks in the file (this is also the number of the last block)
+	nIns : int	 // number of records in the file
+	nDel : int	 // number of records deleted (logically) from file
+End_struct
+
+// TOF file structure
+F : FILE of TblocIndex Buffer Header THeaderIndex
+
+//#########################################################################################################//
+
+Function dicho2(bi : int, bs : int) : T2
+variables
+k : int
+P : T2
+Begin
+    IF ( bi <= bs ) THEN
+        k ← (bi + bs) div 2
+        Allocate(P)
+        P.val.cle ← bufIndex.tab[k].cle
+        P.val.nbloc ← bufIndex.tab[k].nbloc
+        P.val.depl ← bufIndex.tab[k].depl
+        P.fg ← dicho2(bi, k−1)
+        P.fd ← dicho2(k+1, bs)
+        dicho2 ← P
+    ELSE
+        dicho2 ← NULL
+    END_IF
+End
+
+//#########################################################################################################//
+
+Function dicho1(bi : int, bs : int) : T1
+variables
+v1,v2 : int
+R : T2
+P : T1
+Begin
+    IF ( bi <= bs ) THEN
+        k ← (bi + bs) div 2
+        readBlock( IndexFile , k , bufIndex )
+
+        v1 ← bufIndex.tab[1].cle
+        v2 ← bufIndex.tab[bufIndex.NB].cle
+        R  ← dicho2(1, bufIndex.NB)
+
+        Allocate(P)
+        P.val.v1 ← v1
+        P.val.v2 ← v2
+        P.val.R  ← R 
+
+        P.fg ← dicho1(bi, k−1)
+        P.fd ← dicho1(k+1, bs)
+
+        dicho1 ← P
+    ELSE
+       dicho1 ← NULL
+    END_IF
+End
+
+//#########################################################################################################//
+
+procedure LoadFromTOF() 
+variables
+bi,bs : int
+Begin
+    open( IndexFile , "index.tof" , 'E' )
+    bi ← 1
+    bs ← getHeader( IndexFile , "nBlock" )
+    Index ← BuildT1(bi, bs)
+    close( IndexFile )
+End
+
+//#####################################################################################################//
+
+procedure InordreT2(A : T2, i : int, j : int)
+begin
+    if (A <> NULL)
+
+        InordreT2(A.fg, i, j)
+        if (j <= MAXTAB) then
+            bufIndex.tab[j] ← A.val
+            j←j+1
+        else
+            bufIndex.NB ← j - 1
+            writeBlock(IndexFile, i, bufIndex)
+            i ← i+1
+            bufIndex.tab[1] = A->val
+            j ← 2
+        end_if
+        InordreT2(A.fd, i, j)
+
+    end_if
+end
+
+//#############################################################################################################//
+
+procedure InordreT1(A : T1, i : int, j : int)
+begin
+    if (A <> NULL) Then
+        InordreT1(A.fg, i, j)
+        InordreT2(A.val.R, i, j)
+        InordreT1(A.fd, i, j)
+    end_if
+end
+
+//#############################################################################################################//
+
+procedure SaveToTOF()
+variables
+i,j : int
+Begin
+    open( IndexFile , "index.tof" , 'N' )
+    i ← 1
+    j ← 1
+    InordreT1(Index, i, j)
+    bufIndex.NB ← j − 1
+    writeBlock( IndexFile , i , bufIndex )
+    setHeader( IndexFile , "nBlock" , i )
+    close( IndexFile )
+End
+
+//#############################################################################################################//
+//
+// Search for a key in a T2.
+//
+// Parameters:
+//  - `cle`    : (in)  key to search for (int)
+//  - `R`      : (in)  root of the T2 tree to search (T2 *)
+//  - `trouve` : (out) set to true if an exact node with key == cle is found (bool *)
+//  -- if *trouve == true, *PS points to the node containing key
+//  -- if *trouve == false, *PS is NULL (search ran off a leaf)
+//  - `PS`     : (out) on return, points to the node where search stopped:
+//  - `QS`     : (out) on return, points to the parent of *PS (NULL if *PS was root or tree empty)
+//
+// Behavior / notes:
+//  - Traverses the BST using the usual invariant: left->val.cle < node->val.cle < right->val.cle.
+//  - On each step, *QS holds the previous node (parent), *PS holds the current node.
+//  - If the key is found, *trouve is set true and *PS points to that node.
+//  - If the key isn't found, loop exits when *PS becomes NULL and *trouve remains false,
+//    *QS is the last non-NULL node visited (the would-be parent for an insertion).
+//  - Caller must pass addresses for `trouve`, `PS`, `QS`. After return these outputs indicate
+//    whether the key exists and where to insert if it does not.
+//
+//#############################################################################################################//
+
+Procedure RechT2(cle : i, R : T2, trouve : boolean, PS : T2, QS : T2)
+Begin
+    trouve ← false
+    PS ← R
+    QS ← NULL
+
+    WHILE ( PS <> NULL AND NOT trouve ) DO
+        IF ( cle = PS.val.cle ) THEN
+            trouve ← true
+        ELSE
+            QS ← PS
+            IF ( cle < PS.val.cle ) THEN
+                PS ← PS.fg
+            ELSE
+                PS ← PS.fd
+            END_IF
+        END_IF
+    END_WHILE
+End
+
+//#############################################################################################################//
+//
+// Find cle in T1/T2 index.
+//
+// Parameters:
+//  - `cle`   : key to search.
+//  - `trouve`: out == true if found.
+//  - `P`     : out == points to T1 node examined (or where to insert).
+//  - `Q`     : out == parent of *P.
+//  - `PS`    : out == points to T2 node where T2 search stopped (or found).
+//  - `QS`    : out == parent of *PS.
+// Behavior: traverse T1 to find node whose range [v1..v2] contains cle,
+// if found, call RechT2 on that node's val.R to locate the exact occurrence.
+//
+
+//#############################################################################################################//
+
+Procedure Recherche(cle : int, trouve : boolean, P : T1, Q : T1, PS : T2, QS : T2)
+Begin
+    trouve ← false
+    P ← Index
+    Q ← NULL
+    stop ← false
+
+    WHILE ( P <> NULL AND NOT trouve AND NOT stop ) DO
+        IF ( cle >= P.val.v1 AND cle <= P.val.v2 ) THEN
+            stop ← true
+            SearchT2(cle, P.val.R, trouve, PS, QS)
+        ELSE
+            Q ← P
+            IF ( cle < P.val.v1 ) THEN
+                P ← P.fg
+            ELSE
+                P ← P.fd
+            END_IF
+        END_IF
+    END_WHILE
+End
+
+//#############################################################################################################//
+
+Procedure Insert(e : Tenreg, nBlocks : int)
+variables
+trouve : boolean
+P, Q : T1
+PS, QS : T2
+v : ValT2
+Begin
+    P ← NULL
+    Q ← NULL
+    PS ← NULL
+    QS ← NULL
+    GenerateRandom (e.cle)
+    Recherche(e.cle, trouve, P, Q, PS, QS)
+
+    IF ( NOT trouve ) THEN
+        v.cle ← e.cle;
+        GenerateRandom(v.nbloc) 
+        GenerateRandom(v.depl)
+        Allocate(PS)
+        PS.val ← e.cle
+        PS.fg ← NULL
+        PS.fd ← NULL
+        IF ( QS <> NULL ) THEN
+            IF ( e.cle < QS.val.cle ) THEN
+                QS.fg ← PS
+            ELSE
+                QS.fd ← PS
+            END_IF
+        ELSE
+            IF ( P <> NULL ) THEN
+                P.val.R ← PS
+            ELSE
+                Allocate(P)
+                P.val.v1 ← e.cle
+                P.val.v2 ← e.cle
+                P.val.R  ← PS
+                IF ( Q <> NULL ) THEN
+                    IF ( e.cle < Q.val.v1 ) THEN
+                        Q.fg ← P
+                    ELSE
+                        Q.fd ← P
+                    END_IF
+                ELSE
+                    Index ← P
+                END_IF
+            END_IF
+        END_IF
+    END_IF
+End
+
+
+//------------------------- PSEUDOCODE OF PART 2 -------------------------\\
+
+TypeNode = struct
+   tab val : int
+End_struct
+Fonction creat_node(N : TypeNode): TypeNode
+variables
+i : int
+begin
+  Allocate(N)
+  for (i = 0 to 3)
+    begin
+        N.val[i] ← 0
+    end
+end
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+procedure sortNodevalues(N : TypeNode )
+variables 
+ i,j,temp : int 
+begin
+for ( i = 0 to 3 )
+  for ( j = 0 to 3 )
+    if ( N.val[j] > N.val[j+1] )
+        temp ← N.val[j] 
+        N.val[j] ← N.val[j+1] 
+        N.val[j+1] ← temp 
+    end_if
+   end_for
+end_for
+end
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+procedure fillNodeValues(N : TypeNode)   //procedure to tell the user to fill the node with 4 values he wants
+variables
+ i : int 
+begin
+    for ( i = 0 to 3) 
+        write("Enter value ",i + 1," for the node P : ")
+        read(N.val[i])
+        write("\n")
+    end_for
+    sortNodeValues(N)  //after filling the node we sort its values
+end
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+procedure printNodeValues(N : TypeNode , p2 : char )  //procedure to print the values of our Node
+variables
+i : int
+Begin
+    write("                           ┌───────────────────────────┐\n")
+    write("                           │       Node",p2," Values      │\n") //colored this line in cyan color
+    write("                           ├───────────────────────────┤\n")
+    write("                           │")
+    for (i from 0 to 3) 
+        if (N.val[i] = -1)
+           write(N.val[i]," │")   //if the value is -1 we print it in red color
+        else
+           printf(N.val[i]," │")  //else we print it in Green color
+	end_if                  
+    end_for
+    write("\n")
+    write("                           └───────────────────────────┘\n") //the box around the values is not colored
+End
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+procedure helper_table(Tab: TABLE[4] of int , P : TypeNode , value : int ) //the role of this table he's like buffer or something temporary so we put all the values of our node inside it
+Variables
+i,j,temp : int 
+begin
+   for( i = 0 to 4 )
+        tab[i] ← P.val[i]
+   end_for
+   tab[4] ← value                 //we also add the 5th value that the user wants to add that's why this table has 5 cases
+   for ( i = 0 to 4 ) 
+        for ( j = 0 to 4 )   //now we need to sort it to make the work easier for us to deside where the values will go after the split operation
+            if (tab[j] > tab[j + 1]) 
+                int temp ← tab[j]
+                tab[j] ← tab[j + 1]
+                tab[j + 1] ← temp
+             End_if
+        end_for
+   end_for
+end
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+procedure split(P : TypeNode , mid : int)    //the main procedure
+variables
+    tab : TABLE[4] of int 
+    i , value_added : int 
+    Q : TypeNode 
+ begin
+    fillNodeValues(P)         //we fill the node P with 4 values
+    write("Node P values after key insertion and ordering:\n")
+    printNodeValues(P, 'P')
+    write("please enter the value to be added : ")
+    read(value_added)
+    helper_table(tab, P, value_added)         //we fill the helper table
+    createNode(Q)
+    P.val[0] ← tab[0]             //as the node P has already 4 values so when we add new one we've to split it
+    P.val[1] ← tab[1]              // the first 2 values will be in P
+    mid ← tab[2];                   // the midean will be promoted to the parent
+    Q.val[0] ← tab[3]             //the last 2 values will go to the new node Q
+    Q.val[1] ← tab[4]
+    for ( i = 2 to 3)  //we need to empty the remaining values in both nodes
+        P.val[i] ← -1
+        Q.val[i] ← -1
+    end_for
+    write("\nMiddle value to be promoted: ", mid,"\n")  //we print the midean value
+    write("Values in original node p after split: \n")  //we print the values in both nodes after the split operation
+    printNodeValues(p,'P')
+    write("Values in new node Q after split: \n")
+    printNodeValues(Q,'Q')
+    free(Q)
+    free(p)                   //we free our memoery
+end

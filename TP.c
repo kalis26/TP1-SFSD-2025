@@ -546,18 +546,20 @@ void Inserer(Tenreg *e, int nBlocks) {
             if (P != NULL) {
                 P->val.R = PS;
             } else {
-                T1 *P = malloc(sizeof(T1));
-                P->val.v1 = e->cle;
-                P->val.v2 = e->cle;
-                P->val.R = PS;
+                T1 *newP = malloc(sizeof(T1));
+                newP->val.v1 = e->cle;
+                newP->val.v2 = e->cle;
+                newP->val.R = PS;
+                newP->fg = NULL;
+                newP->fd = NULL;
                 if (Q != NULL) {
                     if (e->cle < Q->val.v1) {
-                        Q->fg = P;
+                        Q->fg = newP;
                     } else {
-                        Q->fd = P;
+                        Q->fd = newP;
                     }
                 } else {
-                    Index = P;
+                    Index = newP;
                 }
             }
         }
